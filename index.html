@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <input id="name">
+    <button onclick="connect();">Connect</button>
+    <input id="message">
+    <button onclick="sendMessage()">Send Message</button>
+    <div id="messages"></div>
+</body>
+
+<script>
+    let socket;
+
+    function connect() {
+        socket = new WebSocket('ws://localhost:8080');
+
+        socket.addEventListener('open', function (event) {
+            console.log('Connected to WSS');
+            socket.send(JSON.stringify({ name: document.getElementById('name').value }));
+        })
+
+        socket.addEventListener('message', function (event) {
+            let jsonData = JSON.parse(event.data);
+
+            if (jsonData.message) {
+                addMessageToPage(`${jsonData.name}: ${jsonData.message}`);
+            } else {
+                addMessageToPage(`${jsonData.announcement}`);
+            }
+        })
+    }
+
+    function sendMessage() {
+        let message = document.getElementById('message').value;
+        socket.send(JSON.stringify({ message }));
+        addMessageToPage(`Me: ${message}`)
+    }
+
+    function addMessageToPage(message) {
+        let textMessage = document.createElement('p');
+        textMessage.appendChild(document.createTextNode(message));
+        document.getElementById('messages').appendChild(textMessage);
+    }
+</script>
+
+<style>
+    #messages {
+        display: flex;
+        flex-direction: column;
+    }
+
+    #message>p {
+        padding: 0;
+        margin: 0 0 1rem 0;
+    }
+</style>
+
+</html>
